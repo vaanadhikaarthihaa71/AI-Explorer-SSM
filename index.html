@@ -167,23 +167,46 @@
           </div>
         </div>
 
-        <!-- AI Mascot Video -->
+        <!-- AI Mascot Video Showcase Card -->
         <div class="hero-mascot-col">
-          <video 
-            id="heroMascotVideo" 
-            class="hero-mascot-video" 
-            autoplay 
-            loop 
-            muted 
-            playsinline 
-            webkit-playsinline 
-            preload="auto"
-            aria-label="AI Explorer Guide Video"
-          >
-            <source src="/mascot.mp4" type="video/mp4">
-            <source src="./mascot.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
+          <div class="hero-guide-showcase-card" role="region" aria-label="Aero-12 Interactive Guide">
+            <!-- Studio Header Bar -->
+            <div class="guide-showcase-header">
+              <div class="guide-showcase-status">
+                <span class="status-pulse-dot" aria-hidden="true"></span>
+                <span class="guide-showcase-title">AERO-12 · INTERACTIVE GUIDE</span>
+              </div>
+              <button type="button" class="guide-video-toggle-btn" id="heroVideoToggleBtn" aria-label="Toggle playback">
+                <span id="heroVideoToggleIcon">⏸</span>
+                <span id="heroVideoToggleLabel">LIVE</span>
+              </button>
+            </div>
+
+            <!-- Video Viewport -->
+            <div class="guide-video-viewport">
+              <video 
+                id="heroMascotVideo" 
+                class="hero-mascot-video" 
+                autoplay 
+                loop 
+                muted 
+                playsinline 
+                webkit-playsinline 
+                preload="auto"
+                aria-label="Aero-12 AI Guide Video"
+              >
+                <source src="/mascot.mp4" type="video/mp4">
+                <source src="./mascot.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            <!-- Showcase Footer -->
+            <div class="guide-showcase-footer">
+              <span class="guide-showcase-badge">🤖 Aero-12 Mascot</span>
+              <span class="guide-showcase-note">Click video to pause / resume</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -4799,24 +4822,36 @@
     }
 
     /* ============================================================
-     * AI MASCOT VIDEO EXPERIENCE
+     * AI MASCOT VIDEO EXPERIENCE & SHOWCASE
      * ============================================================ */
     function initHeroVideoExperience() {
       const video = document.getElementById("heroMascotVideo");
+      const toggleBtn = document.getElementById("heroVideoToggleBtn");
+      const toggleIcon = document.getElementById("heroVideoToggleIcon");
+      const toggleLabel = document.getElementById("heroVideoToggleLabel");
       if (!video) return;
 
-      // Autoplay requires muted
+      function updateUIState() {
+        if (!toggleIcon || !toggleLabel) return;
+        if (video.paused) {
+          toggleIcon.textContent = "▶";
+          toggleLabel.textContent = "PLAY";
+        } else {
+          toggleIcon.textContent = "⏸";
+          toggleLabel.textContent = "LIVE";
+        }
+      }
+
       video.muted = true;
       video.defaultMuted = true;
       video.playsInline = true;
 
       const playPromise = video.play();
       if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn("Autoplay was deferred by browser policy:", err);
-          // Auto-resume on first user click or tap anywhere
+        playPromise.then(updateUIState).catch((err) => {
+          updateUIState();
           const resume = () => {
-            video.play().catch(() => {});
+            video.play().then(updateUIState).catch(() => {});
             window.removeEventListener("click", resume);
             window.removeEventListener("touchstart", resume);
           };
@@ -4825,14 +4860,24 @@
         });
       }
 
-      // Allow clicking directly on video to toggle play/pause
-      video.addEventListener("click", () => {
+      video.addEventListener("play", updateUIState);
+      video.addEventListener("pause", updateUIState);
+
+      function togglePlay() {
         if (video.paused) {
           video.play().catch(() => {});
         } else {
           video.pause();
         }
-      });
+      }
+
+      video.addEventListener("click", togglePlay);
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          togglePlay();
+        });
+      }
     }
 
     /* ============================================================

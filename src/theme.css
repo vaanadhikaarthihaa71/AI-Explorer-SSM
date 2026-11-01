@@ -609,7 +609,8 @@ p {
 }
 
 /* ==========================================================================
-   HERO VIDEO (CLEAN DIRECT DISPLAY - ZERO LAYERS)
+   HERO VIDEO INTEGRATION (AERO-12 SHOWCASE CARD)
+   Seamless, elegant editorial showcase integrated with the light theme design
    ========================================================================== */
 .hero-mascot-col {
   position: relative;
@@ -619,16 +620,127 @@ p {
   width: 100%;
 }
 
-.hero-mascot-video {
+.hero-guide-showcase-card {
   width: 100%;
   max-width: 520px;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  display: block;
-  border-radius: 16px;
-  object-fit: cover;
-  background: transparent;
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: 20px;
+  padding: 0.85rem;
+  box-shadow: 
+    0 16px 40px -12px rgba(18, 24, 40, 0.08),
+    0 2px 8px rgba(18, 24, 40, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+}
+
+.hero-guide-showcase-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(110, 68, 255, 0.3);
+  box-shadow: 
+    0 22px 48px -12px rgba(110, 68, 255, 0.12),
+    0 4px 12px rgba(18, 24, 40, 0.05);
+}
+
+.guide-showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.2rem 0.4rem 0.65rem;
+  border-bottom: 1px solid #F1F4FA;
+  margin-bottom: 0.65rem;
+}
+
+.guide-showcase-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.75; }
+}
+
+.guide-showcase-title {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-purple);
+  text-transform: uppercase;
+}
+
+.guide-video-toggle-btn {
+  background: #F3EEFD;
+  border: 1px solid rgba(110, 68, 255, 0.2);
+  border-radius: var(--radius-pill);
+  padding: 0.2rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-purple);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guide-video-toggle-btn:hover {
+  background: var(--accent-purple);
+  color: #FFFFFF;
+}
+
+.guide-video-viewport {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2F6 100%);
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(18, 24, 40, 0.06);
+}
+
+.hero-mascot-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.guide-showcase-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.4rem 0.2rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #F1F4FA;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.guide-showcase-badge {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--accent-slate);
+}
+
+.guide-showcase-note {
+  font-family: var(--font-body);
+  color: var(--text-muted);
 }
 
 /* --------------------------------------------------------------------------
@@ -3077,7 +3189,7 @@ footer,
     justify-content: center;
   }
 
-  .hero-mascot-video {
+  .hero-guide-showcase-card {
     height: auto;
     max-width: 480px;
     width: 100%;
@@ -3135,7 +3247,7 @@ footer,
     font-size: 0.98rem;
   }
 
-  .hero-mascot-video {
+  .hero-guide-showcase-card {
     height: auto;
     max-width: 100%;
   }
