@@ -464,15 +464,11 @@
        CENTRAL DATABASE CONNECTION & REAL-TIME BROADCAST SYNC
        ============================================================ */
     async function initDatabaseConnection() {
-      // 1. First probe live server API
-      const serverOk = await syncLiveServerDatabase();
-      if (serverOk) {
-        updateLoginDbWidget();
-        return;
-      }
-
-      // 2. Fallback to Firebase if configured
+      // 1. Initialize Firebase Auth & Cloud Firestore if configured
       initFirebase();
+
+      // 2. Probe live server API
+      await syncLiveServerDatabase();
       updateLoginDbWidget();
     }
 
@@ -592,8 +588,45 @@
     }
 
     /* ============================================================
-       FIREBASE AUTHENTICATION (FOR CLOUD DEPLOYMENTS)
+       FIREBASE AUTHENTICATION & ROLE VERIFICATION
        ============================================================ */
+    async function verifyAdminRole(user) {
+      if (!user) return false;
+      try {
+        const idTokenResult = await user.getIdTokenResult(true);
+        const claims = idTokenResult.claims || {};
+
+        // 1. If explicit role or admin claim is present, verify it
+        if (typeof claims.admin !== "undefined" && claims.admin === false) {
+          return false;
+        }
+        if (claims.role && claims.role !== "admin" && claims.role !== "organizer" && claims.role !== "teacher") {
+          return false;
+        }
+
+        // 2. Check Firestore admin record if available
+        if (typeof firebase !== "undefined" && firebase.firestore) {
+          try {
+            const db = firebase.firestore();
+            const adminDoc = await db.collection("admins").doc(user.uid).get();
+            if (adminDoc.exists) {
+              const data = adminDoc.data();
+              if (data && typeof data.isAdmin === "boolean") return data.isAdmin;
+              if (data && data.role) return data.role === "admin" || data.role === "organizer" || data.role === "teacher";
+            }
+          } catch (e) {
+            // Collection might not exist in simple setups; fallback to auth user verification
+          }
+        }
+
+        // Standard workshop admin: all accounts created for the workshop in Firebase Auth
+        return true;
+      } catch (err) {
+        console.warn("Admin role verification warning:", err);
+        return true;
+      }
+    }
+
     function initFirebase() {
       const connPill = document.getElementById("connStatus");
       const connText = document.getElementById("connStatusText");
@@ -603,26 +636,96 @@
           if (!firebase.apps.length) {
             firebase.initializeApp(FIREBASE_CONFIG);
           }
-          firebase.auth().onAuthStateChanged(user => {
+          firebase.auth().onAuthStateChanged(async (user) => {
             if (user) {
-              currentUser = user;
-              isDemoMode = false;
-              connPill.className = "status-pill";
-              connText.innerText = "Live Cloud Firestore Connected 🟢";
-              document.getElementById("authActionBtn").style.display = "inline-flex";
-              document.getElementById("authActionBtn").innerText = "Sign Out";
-              showDashboard();
-              listenToLiveFirestore();
+              const isAdmin = await verifyAdminRole(user);
+              if (isAdmin) {
+                currentUser = user;
+                isDemoMode = false;
+                if (connPill) connPill.className = "status-pill";
+                if (connText) connText.innerText = "Live Cloud Firestore Connected 🟢";
+                const authBtn = document.getElementById("authActionBtn");
+                if (authBtn) {
+                  authBtn.style.display = "inline-flex";
+                  authBtn.innerText = "Sign Out";
+                }
+                showDashboard();
+                listenToLiveFirestore();
+              } else {
+                await firebase.auth().signOut();
+                currentUser = null;
+                showLoginView();
+                const errBox = document.getElementById("loginError");
+                if (errBox) {
+                  errBox.innerText = "Access denied: Account does not have workshop administrator privileges.";
+                  errBox.style.display = "block";
+                }
+              }
             } else if (!isDemoMode) {
+              currentUser = null;
               showLoginView();
-              connPill.className = "status-pill";
-              connText.innerText = "Local Database Ready ⚡";
-              document.getElementById("authActionBtn").style.display = "none";
+              if (connPill) connPill.className = "status-pill";
+              if (connText) connText.innerText = "Local Database Ready ⚡";
+              const authBtn = document.getElementById("authActionBtn");
+              if (authBtn) authBtn.style.display = "none";
             }
           });
         }
       } catch (err) {
         console.warn("Firebase warning:", err);
+      }
+    }
+
+    /* ============================================================
+       DATA LOADING: FIRESTORE LIVE SNAPSHOT & REAL-TIME SYNC
+       ============================================================ */
+    function listenToLiveFirestore() {
+      try {
+        if (typeof firebase === "undefined" || !firebase.firestore) return;
+        const db = firebase.firestore();
+        if (firestoreUnsubscribe) {
+          firestoreUnsubscribe();
+          firestoreUnsubscribe = null;
+        }
+
+        firestoreUnsubscribe = db.collection("results")
+          .onSnapshot(snapshot => {
+            const list = [];
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              list.push({ id: doc.id, ...data });
+            });
+
+            // Merge any offline queue records from local storage
+            const localQueue = getOfflineLocalData();
+            const idMap = new Set(list.map(x => x.id || (x.studentId + "_" + x.createdAt)));
+            localQueue.forEach(item => {
+              const uniqueKey = item.id || (item.studentId + "_" + item.createdAt);
+              if (!idMap.has(uniqueKey)) {
+                list.push({ ...item, _isLocalOffline: true });
+              }
+            });
+
+            // Sort newest first
+            list.sort((a, b) => {
+              const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return tB - tA;
+            });
+
+            rawSubmissions = list;
+            applyFilters();
+            renderPresence();
+            renderPodium();
+            renderDatabaseViews();
+          }, error => {
+            console.error("Firestore live listener error:", error);
+            // Fall back to server database sync
+            syncLiveServerDatabase();
+          });
+      } catch (e) {
+        console.warn("Unable to start live Firestore listener:", e);
+        syncLiveServerDatabase();
       }
     }
 
@@ -637,8 +740,19 @@
       btn.disabled = true;
       btn.innerText = "Verifying credentials...";
 
+      // Ensure Firebase app initialized
+      if (typeof firebase !== "undefined") {
+        if (!firebase.apps.length && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith("YOUR_")) {
+          try {
+            firebase.initializeApp(FIREBASE_CONFIG);
+          } catch (initErr) {
+            console.error("Firebase init error:", initErr);
+          }
+        }
+      }
+
       if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("YOUR_")) {
-        errBox.innerText = "Firebase keys are not configured. Click the button above to launch the Live Command Center using the local server database!";
+        errBox.innerText = "Firebase keys are not configured. Click the launch button above to open the Live Command Center using the local server database!";
         errBox.style.display = "block";
         btn.disabled = false;
         btn.innerText = "Sign In With Firebase Account →";
@@ -646,8 +760,14 @@
       }
 
       try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        showToast("Signed in successfully!", "✅");
+        const userCred = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const isAdmin = await verifyAdminRole(userCred.user);
+        if (!isAdmin) {
+          await firebase.auth().signOut();
+          throw new Error("Access denied: Your account does not have administrator privileges.");
+        }
+        showToast("Signed in as Admin!", "✅");
+        showDashboard();
       } catch (err) {
         errBox.innerText = err.message || "Failed to sign in.";
         errBox.style.display = "block";

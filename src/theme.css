@@ -167,8 +167,9 @@ body::before {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: 9999;
+  display: none;
 }
 
 /* Focus Indicator */
@@ -344,9 +345,13 @@ p {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
   font-size: 0.95rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
+  user-select: none;
 }
 
 .theme-toggle-btn:hover {
@@ -354,6 +359,15 @@ p {
   border-color: var(--border-card-hover);
   color: var(--accent-purple-text);
   transform: translateY(-1px);
+}
+
+.admin-portal-btn {
+  text-decoration: none !important;
+  font-weight: 700;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
 }
 
 /* Step Progress Rail */

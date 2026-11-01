@@ -48,9 +48,17 @@
           </div>
 
           <!-- Organizer / Admin Console Link -->
-          <a href="/admin.html" class="theme-toggle-btn" title="Organizer & Teacher Admin Console" aria-label="Open Workshop Admin Console" style="text-decoration: none; font-size: 0.85rem; font-weight: 700; gap: 0.35rem; padding: 0.4rem 0.75rem;">
-            <span>📊</span>
-            <span style="font-size: 0.82rem; font-family: var(--font-heading);">Admin</span>
+          <a
+            href="/admin"
+            id="adminPortalBtn"
+            class="theme-toggle-btn admin-portal-btn"
+            title="Organizer & Teacher Admin Portal"
+            aria-label="Open Workshop Admin Portal"
+            onclick="navigateToAdmin(event)"
+            style="text-decoration: none; font-size: 0.85rem; font-weight: 700; gap: 0.35rem; padding: 0.4rem 0.75rem; cursor: pointer; pointer-events: auto; position: relative; z-index: 10;"
+          >
+            <span aria-hidden="true">📊</span>
+            <span style="font-size: 0.82rem; font-family: var(--font-heading);">Admin Portal</span>
           </a>
 
           <!-- Light / Dark Mode Toggle -->
@@ -2942,6 +2950,7 @@
     function triggerConfetti() {
       const canvas = document.getElementById("confettiCanvas");
       if (!canvas) return;
+      canvas.style.display = "block";
       const ctx = canvas.getContext("2d");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -2998,6 +3007,7 @@
         } else {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           cancelAnimationFrame(animationFrame);
+          canvas.style.display = "none";
         }
       }
 
@@ -3005,10 +3015,37 @@
     }
 
     /* ============================================================
+       NAVIGATION: ADMIN PORTAL
+       ============================================================ */
+    function navigateToAdmin(event) {
+      if (event && event.preventDefault) {
+        event.preventDefault();
+      }
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      window.location.href = "/admin";
+    }
+
+    function initAdminNavigation() {
+      const adminBtn = document.getElementById("adminPortalBtn");
+      if (adminBtn) {
+        adminBtn.onclick = navigateToAdmin;
+        adminBtn.addEventListener("click", navigateToAdmin);
+        adminBtn.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            navigateToAdmin(e);
+          }
+        });
+      }
+    }
+
+    /* ============================================================
        INITIALIZATION
        ============================================================ */
     window.addEventListener("DOMContentLoaded", () => {
       initTheme();
+      initAdminNavigation();
       loadSavedState();
       renderToolDots();
       renderToolCard(STATE.unlockedToolIndex);

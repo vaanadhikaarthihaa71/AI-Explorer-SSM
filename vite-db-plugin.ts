@@ -483,6 +483,12 @@ export function databaseApiPlugin(): Plugin {
           return sendJson(res, { ok: true });
         }
 
+        // Route /admin and /admin/ to /admin.html in dev server
+        if (url === '/admin' || url === '/admin/') {
+          req.url = '/admin.html';
+          return next();
+        }
+
         // GET /api/database or GET /api/submissions
         if (url === '/api/database' || url === '/api/submissions') {
           if (method === 'GET') {
