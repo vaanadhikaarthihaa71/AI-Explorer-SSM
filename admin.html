@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>AI Explorer - Command Center & Database Matrix</title>
+
+  <!-- Google Fonts: Space Grotesk, Outfit, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/src/theme.css">
+  <link rel="stylesheet" href="/src/admin-theme.css">
+
+  <!-- Firebase SDK (Compat mode for cloud sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ============================================================
+       TOP COMMAND CENTER HEADER
+       ============================================================ -->
+  <header class="admin-header">
+    <div class="container">
+      <div class="admin-header-inner">
+        <div class="brand-wrap">
+          <div class="brand-badge">
+            <span class="status-dot"></span>
+            <span>COMMAND CENTER</span>
+          </div>
+          <div class="brand-title-group">
+            <h1>AI Explorer Organizer Console</h1>
+            <p>SSMIET 12th-Grade Workshop Analytics & Live Database Matrix</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <a href="/" class="btn btn-outline btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;" title="Go to Student Workshop Platform">
+            ← Student Platform
+          </a>
+
+          <div id="connStatus" class="status-pill">
+            <span class="status-dot"></span>
+            <span id="connStatusText">Connecting DB...</span>
+          </div>
+
+          <button id="refreshBtn" class="btn btn-outline btn-sm" onclick="refreshData()" title="Reload live database">
+            🔄 Sync DB
+          </button>
+
+          <button class="btn btn-outline btn-sm" onclick="exportDatabaseJSON()" title="Export full database as JSON">
+            💾 Export JSON
+          </button>
+
+          <button class="btn btn-primary btn-sm" onclick="exportCSV()" title="Export submissions as CSV">
+            📥 Export CSV
+          </button>
+
+          <button id="authActionBtn" class="btn btn-outline btn-sm" onclick="handleAuthAction()" style="display:none;">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       VIEW 1: LOGIN CARD & CYBER GATE
+       ============================================================ -->
+  <main id="loginView" class="login-container">
+    <div class="login-card">
+      <div class="login-icon">🛡️</div>
+      <h2 class="login-title">Command Center Access</h2>
+      <p class="login-desc">Real-time student telemetry, career matrix analytics, and live leaderboard tracking for SSMIET AI Explorer.</p>
+
+      <!-- Live Database Quick Telemetry Box -->
+      <div class="login-db-widget">
+        <div class="login-db-widget-header">
+          <span>⚡ Live Database Status</span>
+          <span style="color: #34D399;">● Online</span>
+        </div>
+        <div class="login-db-widget-grid">
+          <div class="login-db-stat-item">
+            Tracked Students
+            <strong id="loginStatStudents">--</strong>
+          </div>
+          <div class="login-db-stat-item">
+            Top Performer
+            <strong id="loginStatTopScorer">--</strong>
+          </div>
+        </div>
+
+        <!-- Live Registered Students Feed in Login View -->
+        <div id="loginStudentsList" class="login-db-students-preview" style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed rgba(53, 217, 255, 0.25); text-align: left;">
+          <div style="font-size: 0.76rem; font-family: var(--font-mono); color: #BAC2E2; margin-bottom: 0.45rem; display: flex; justify-content: space-between; align-items: center;">
+            <span>REGISTERED STUDENTS IN DATABASE:</span>
+            <span style="color: #35D9FF; font-weight: 800;">● LIVE FEED</span>
+          </div>
+          <div id="loginRecentStudentsChips" style="display: flex; flex-wrap: wrap; gap: 0.4rem; max-height: 95px; overflow-y: auto;">
+            <!-- Populated via updateLoginDbWidget() -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Launch Button -->
+      <button type="button" class="cyber-btn-launch" onclick="startDemoMode()">
+        <span>🚀 Launch Live Command Center & Database Matrix →</span>
+      </button>
+
+      <div class="divider">
+        <span>OR CLOUD FIREBASE SIGN IN</span>
+      </div>
+
+      <div id="loginError" class="login-error"></div>
+
+      <form onsubmit="handleLoginSubmit(event)">
+        <div class="form-group" style="text-align: left; margin-bottom: 1.1rem;">
+          <label class="form-label" for="adminEmail" style="font-size: 0.9rem; color: #BAC2E2;">Organizer Email</label>
+          <input type="email" id="adminEmail" class="form-input" style="width: 100%; box-sizing: border-box;" placeholder="organizer@ssmiet.ac.in" required autocomplete="email" />
+        </div>
+
+        <div class="form-group" style="text-align: left; margin-bottom: 1.35rem;">
+          <label class="form-label" for="adminPassword" style="font-size: 0.9rem; color: #BAC2E2;">Password</label>
+          <input type="password" id="adminPassword" class="form-input" style="width: 100%; box-sizing: border-box;" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+
+        <button type="submit" id="btnLoginSubmit" class="btn btn-outline" style="width: 100%;">
+          Sign In With Firebase Account →
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       VIEW 2: MAIN ADMIN COMMAND CENTER DASHBOARD
+       ============================================================ -->
+  <main id="adminDashboard" class="container" style="display: none; padding-top: 1.5rem; padding-bottom: 3rem;">
+
+    <!-- TOP PERFORMERS PODIUM // WHO SCORED THE MOST -->
+    <section class="podium-container" id="topPerformersSection">
+      <div class="podium-header">
+        <div class="podium-title-group">
+          <h2><span>🏆</span> Top Scorers & Performers</h2>
+          <p>Real-time hall of fame ranking students by highest knowledge quiz scores & workshop mastery.</p>
+        </div>
+        <div class="status-pill" style="background: rgba(255, 215, 0, 0.12); border-color: rgba(255, 215, 0, 0.4); color: var(--admin-gold);">
+          <span>👑 TOP PERFORMER SPOTLIGHT</span>
+        </div>
+      </div>
+
+      <!-- Podium Cards: Rank 2 (Left), Rank 1 (Center Elevated), Rank 3 (Right) -->
+      <div class="podium-grid" id="podiumGrid">
+        <!-- Injected via renderPodium() -->
+      </div>
+    </section>
+
+    <!-- LIVE ACTIVE STUDENTS PRESENCE STRIP -->
+    <div class="live-presence-bar">
+      <div class="presence-label">
+        <span class="status-dot"></span>
+        <span>LIVE PARTICIPANTS (<span id="liveActiveCount">0</span>)</span>
+      </div>
+      <div class="presence-scroll-row" id="livePresenceRow">
+        <!-- Injected via renderPresence() -->
+      </div>
+    </div>
+
+    <!-- HUD TELEMETRY METRIC PODS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-content">
+          <h3>Total Registered Students</h3>
+          <div class="metric-num" id="statUniqueStudents">0</div>
+          <div class="metric-sub" id="statStudentSub">Distinct participant IDs</div>
+        </div>
+        <div class="metric-icon-wrap">🧑‍🎓</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-content">
+          <h3>Top Performer Score</h3>
+          <div class="metric-num" id="statTopPerformerScore" style="color: var(--admin-gold);">--</div>
+          <div class="metric-sub" id="statTopPerformerName">Highest score in class</div>
+        </div>
+        <div class="metric-icon-wrap">👑</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-content">
+          <h3>Class Average Score</h3>
+          <div class="metric-num" id="statAvgScore">0 / 15</div>
+          <div class="metric-sub" id="statAvgPct">0% class average</div>
+        </div>
+        <div class="metric-icon-wrap">🧠</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-content">
+          <h3>Top Career Match</h3>
+          <div class="metric-num" id="statTopDomain" style="font-size: 1.3rem; margin-top: 0.2rem;">-</div>
+          <div class="metric-sub" id="statTopDomainSub">Awaiting submissions</div>
+        </div>
+        <div class="metric-icon-wrap">🎯</div>
+      </div>
+    </div>
+
+    <!-- COMMAND TABS NAVIGATION -->
+    <nav class="admin-tabs-nav">
+      <button type="button" class="admin-tab-btn active" id="tabBtnSubmissions" onclick="switchAdminTab('submissions')">
+        <span>📑 Submissions Log</span>
+        <span class="tab-badge" id="tabBadgeSubmissions">0</span>
+      </button>
+
+      <button type="button" class="admin-tab-btn" id="tabBtnDatabase" onclick="switchAdminTab('database')">
+        <span>🗄️ Live Database Matrix</span>
+        <span class="tab-badge" id="tabBadgeDatabase">0 Records</span>
+      </button>
+
+      <button type="button" class="admin-tab-btn" id="tabBtnAnalytics" onclick="switchAdminTab('analytics')">
+        <span>📊 Career Domain Analytics</span>
+      </button>
+    </nav>
+
+    <!-- TAB 1: SUBMISSIONS LOG -->
+    <div id="tabViewSubmissions" class="tab-content-panel">
+      <div class="card-panel">
+        <div class="card-panel-header">
+          <h2><span>📑</span> Student Submissions & Live Performance Log</h2>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn btn-outline btn-sm" id="btnFilterTopScorers" onclick="toggleTopScorersFilter()">
+              🏆 Show Top Scorers Only
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters & Search Toolbar -->
+        <div class="filter-bar">
+          <div class="search-box">
+            <input type="text" id="filterSearch" placeholder="Search by name, ID, school, stream..." oninput="applyFilters()" />
+          </div>
+
+          <select id="filterClass" class="filter-select" onchange="applyFilters()">
+            <option value="all">All Classes</option>
+            <option value="12th">Class 12th</option>
+            <option value="Passed 12th">Passed 12th</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <select id="filterStream" class="filter-select" onchange="applyFilters()">
+            <option value="all">All Streams</option>
+            <option value="PCM">PCM</option>
+            <option value="PCB">PCB</option>
+            <option value="PCMB">PCMB</option>
+            <option value="Commerce with Maths">Commerce w/ Maths</option>
+            <option value="Commerce without Maths">Commerce w/o Maths</option>
+            <option value="Arts">Arts</option>
+            <option value="Vocational">Vocational</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <select id="filterType" class="filter-select" onchange="applyFilters()">
+            <option value="all">All Types</option>
+            <option value="knowledge_quiz">Knowledge Quiz</option>
+            <option value="career_profile">Career Profile</option>
+            <option value="student_registered">Student Joined</option>
+            <option value="prompt_gym">Prompt Gym</option>
+          </select>
+
+          <button class="btn btn-outline btn-sm" onclick="resetFilters()">
+            Clear Filters
+          </button>
+        </div>
+
+        <!-- Submissions Table -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank / Status</th>
+                <th>Time / Date</th>
+                <th>Explorer ID</th>
+                <th>Student Name</th>
+                <th>School & Stream</th>
+                <th>Type</th>
+                <th>Score / Key Result</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="submissionsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  Loading submissions...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LIVE DATABASE MATRIX -->
+    <div id="tabViewDatabase" class="tab-content-panel" style="display: none;">
+      <div class="card-panel">
+        <div class="card-panel-header">
+          <div>
+            <h2><span>🗄️</span> Live Central Database Matrix</h2>
+            <p style="font-size: 0.85rem; color: #BAC2E2; margin: 0.2rem 0 0 0;">
+              Persistent JSON database (<code style="color: var(--admin-cyan);">data/database.json</code>) automatically aggregating students, career profiles, and scores.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn btn-outline btn-sm" onclick="exportDatabaseJSON()">
+              💾 Download database.json
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="copyDatabaseJSON()">
+              📋 Copy Raw JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Subnav inside Database Tab -->
+        <div class="db-subnav">
+          <button type="button" class="db-subnav-btn active" id="dbSubnavStudents" onclick="switchDatabaseSubview('students')">
+            👥 Students Collection (<span id="dbStudentsCount">0</span>)
+          </button>
+          <button type="button" class="db-subnav-btn" id="dbSubnavSubmissions" onclick="switchDatabaseSubview('submissions')">
+            📑 Submissions Collection (<span id="dbSubmissionsCount">0</span>)
+          </button>
+          <button type="button" class="db-subnav-btn" id="dbSubnavRaw" onclick="switchDatabaseSubview('raw')">
+            ⚡ Raw JSON Inspector
+          </button>
+        </div>
+
+        <!-- Database Subview 1: Students Collection -->
+        <div id="dbViewStudents" class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>School & Stream</th>
+                <th>Status</th>
+                <th>Knowledge Score</th>
+                <th>Prompt Score</th>
+                <th>Career Top Match</th>
+                <th>Registered</th>
+                <th style="text-align: right;">Dossier</th>
+              </tr>
+            </thead>
+            <tbody id="dbStudentsTableBody">
+              <!-- Injected via renderDatabaseStudents() -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Database Subview 2: Submissions Collection -->
+        <div id="dbViewSubmissions" class="table-container" style="display: none;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Submission ID</th>
+                <th>Type</th>
+                <th>Student</th>
+                <th>Timestamp</th>
+                <th>Payload Summary</th>
+                <th style="text-align: right;">View</th>
+              </tr>
+            </thead>
+            <tbody id="dbSubmissionsTableBody">
+              <!-- Injected via renderDatabaseSubmissions() -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Database Subview 3: Raw JSON Inspector -->
+        <div id="dbViewRaw" class="json-viewer-wrap" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--admin-cyan);">DATA/DATABASE.JSON // LIVE SERVER STATE</span>
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: #BAC2E2;" id="dbRawLastUpdated"></span>
+          </div>
+          <div class="json-code-box" id="dbRawJsonCode">Loading database...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CAREER DOMAIN ANALYTICS -->
+    <div id="tabViewAnalytics" class="tab-content-panel" style="display: none;">
+      <div class="card-panel">
+        <div class="card-panel-header">
+          <h2><span>📊</span> Engineering & AI Domain Distribution</h2>
+          <span style="font-size: 0.82rem; color: #BAC2E2;">Calculated from all completed Career Profile Quizzes</span>
+        </div>
+        <div class="chart-list" id="careerChartContainer">
+          <!-- Injected via renderCareerDomainChart() -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       DRAWER / MODAL: COMPREHENSIVE STUDENT DOSSIER
+       ============================================================ -->
+  <div id="detailDrawer" class="drawer-overlay" onclick="closeDrawer(event)">
+    <div class="drawer-content" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <h2 id="drawerTitle">Student Dossier</h2>
+        <button class="btn btn-outline btn-sm" onclick="closeDrawer()">✕ Close</button>
+      </div>
+      <div class="drawer-body" id="drawerBody">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="toast-box">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+  <!-- ============================================================
+       ADMIN SCRIPT LOGIC
+       ============================================================ -->
+  <script>
+    /* ============================================================
+       FIREBASE CONFIGURATION
+       ============================================================ */
+    const FIREBASE_CONFIG = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // State Variables
+    let currentUser = null;
+    let isDemoMode = false;
+    let firestoreUnsubscribe = null;
+    let rawSubmissions = [];
+    let rawStudents = [];
+    let serverStats = {};
+    let filteredSubmissions = [];
+    let filterOnlyTopScorers = false;
+    let currentAdminTab = "submissions";
+    let currentDatabaseSubview = "students";
+    let fullRawDatabase = { students: [], submissions: [] };
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initDatabaseConnection();
+      initRealtimeBroadcastSync();
+      // Poll database every 3 seconds for continuous live telemetry
+      setInterval(syncLiveServerDatabase, 3000);
+    });
+
+    /* ============================================================
+       CENTRAL DATABASE CONNECTION & REAL-TIME BROADCAST SYNC
+       ============================================================ */
+    async function initDatabaseConnection() {
+      // 1. First probe live server API
+      const serverOk = await syncLiveServerDatabase();
+      if (serverOk) {
+        updateLoginDbWidget();
+        return;
+      }
+
+      // 2. Fallback to Firebase if configured
+      initFirebase();
+      updateLoginDbWidget();
+    }
+
+    function initRealtimeBroadcastSync() {
+      if (typeof BroadcastChannel !== "undefined") {
+        try {
+          const syncChannel = new BroadcastChannel("ai_explorer_db_sync");
+          syncChannel.onmessage = (event) => {
+            const data = event.data;
+            if (data) {
+              if (data.type === "student_registered") {
+                showToast(`👤 ${data.studentName || 'Student'} joined the session!`, "⚡");
+              } else if (data.record && data.record.type === "knowledge_quiz") {
+                showToast(`🏆 ${data.record.studentName} scored ${data.record.score}/15 on quiz!`, "🎯");
+              } else if (data.record && data.record.type === "career_profile") {
+                showToast(`🎯 ${data.record.studentName} completed Career Profile!`, "✨");
+              }
+            }
+            syncLiveServerDatabase();
+          };
+        } catch (e) {
+          console.warn("BroadcastChannel not supported:", e);
+        }
+      }
+    }
+
+    async function syncLiveServerDatabase() {
+      try {
+        const res = await fetch("/api/database?_t=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        if (data && data.success) {
+          fullRawDatabase = data;
+          rawStudents = data.students || [];
+          rawSubmissions = data.submissions || [];
+          serverStats = data.stats || {};
+
+          // Update UI connection status
+          const connPill = document.getElementById("connStatus");
+          const connText = document.getElementById("connStatusText");
+          if (connPill) connPill.className = "status-pill";
+          if (connText) connText.innerText = "Live Server DB Synced 🟢";
+
+          updateLoginDbWidget();
+          applyFilters();
+          renderPresence();
+          renderPodium();
+          renderDatabaseViews();
+          return true;
+        }
+      } catch (err) {
+        // Fallback to local storage if server API is unreachable
+        loadLocalFallbackData();
+        return false;
+      }
+      return false;
+    }
+
+    function loadLocalFallbackData() {
+      const localQueue = getOfflineLocalData();
+      const combined = [...localQueue];
+      rawSubmissions = combined;
+      applyFilters();
+      renderPresence();
+      renderPodium();
+    }
+
+    function getOfflineLocalData() {
+      try {
+        const raw = localStorage.getItem("ai_explorer_offline_results");
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function updateLoginDbWidget() {
+      const studentCountEl = document.getElementById("loginStatStudents");
+      const topScorerEl = document.getElementById("loginStatTopScorer");
+      const chipsContainer = document.getElementById("loginRecentStudentsChips");
+      if (!studentCountEl || !topScorerEl) return;
+
+      const count = rawStudents.length || rawSubmissions.length;
+      studentCountEl.innerText = `${count} Students`;
+
+      const topPerformer = rawStudents.find(s => s.isTopPerformer || s.rank === 1);
+      if (topPerformer) {
+        topScorerEl.innerText = `${topPerformer.studentName} (${topPerformer.quizScore || 0}/15)`;
+      } else {
+        const topQuiz = rawSubmissions.filter(s => s.type === "knowledge_quiz").sort((a,b) => (b.score||0) - (a.score||0))[0];
+        if (topQuiz) {
+          topScorerEl.innerText = `${topQuiz.studentName} (${topQuiz.score}/15)`;
+        } else {
+          topScorerEl.innerText = "Awaiting Submissions";
+        }
+      }
+
+      if (chipsContainer) {
+        const displayStudents = rawStudents.length > 0 ? rawStudents : rawSubmissions;
+        if (!displayStudents || displayStudents.length === 0) {
+          chipsContainer.innerHTML = `<span style="font-size: 0.8rem; color: #BAC2E2;">Awaiting students to register...</span>`;
+        } else {
+          chipsContainer.innerHTML = displayStudents.slice(0, 10).map(s => {
+            const isTop = s.isTopPerformer || s.rank === 1;
+            const scoreLabel = typeof s.quizScore === 'number' && s.quizScore > 0 
+              ? `${s.quizScore}/15` 
+              : (s.status ? s.status.slice(0, 14) : 'Active');
+            return `
+              <span class="login-student-chip ${isTop ? 'top-chip' : ''}" title="${escapeHtml(s.studentName || s.studentId)}">
+                ${isTop ? '👑' : '👤'} <strong>${escapeHtml(s.studentName || s.studentId)}</strong>
+                <span class="chip-score">${scoreLabel}</span>
+              </span>
+            `;
+          }).join("");
+        }
+      }
+    }
+
+    /* ============================================================
+       FIREBASE AUTHENTICATION (FOR CLOUD DEPLOYMENTS)
+       ============================================================ */
+    function initFirebase() {
+      const connPill = document.getElementById("connStatus");
+      const connText = document.getElementById("connStatusText");
+
+      try {
+        if (typeof firebase !== "undefined" && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith("YOUR_")) {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+          }
+          firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+              currentUser = user;
+              isDemoMode = false;
+              connPill.className = "status-pill";
+              connText.innerText = "Live Cloud Firestore Connected 🟢";
+              document.getElementById("authActionBtn").style.display = "inline-flex";
+              document.getElementById("authActionBtn").innerText = "Sign Out";
+              showDashboard();
+              listenToLiveFirestore();
+            } else if (!isDemoMode) {
+              showLoginView();
+              connPill.className = "status-pill";
+              connText.innerText = "Local Database Ready ⚡";
+              document.getElementById("authActionBtn").style.display = "none";
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Firebase warning:", err);
+      }
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value;
+      const errBox = document.getElementById("loginError");
+      const btn = document.getElementById("btnLoginSubmit");
+
+      errBox.style.display = "none";
+      btn.disabled = true;
+      btn.innerText = "Verifying credentials...";
+
+      if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("YOUR_")) {
+        errBox.innerText = "Firebase keys are not configured. Click the button above to launch the Live Command Center using the local server database!";
+        errBox.style.display = "block";
+        btn.disabled = false;
+        btn.innerText = "Sign In With Firebase Account →";
+        return;
+      }
+
+      try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        showToast("Signed in successfully!", "✅");
+      } catch (err) {
+        errBox.innerText = err.message || "Failed to sign in.";
+        errBox.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Sign In With Firebase Account →";
+      }
+    }
+
+    function startDemoMode() {
+      isDemoMode = true;
+      showDashboard();
+      syncLiveServerDatabase();
+      document.getElementById("authActionBtn").style.display = "inline-flex";
+      document.getElementById("authActionBtn").innerText = "Exit Dashboard";
+      showToast("Live Command Center & Database Matrix loaded!", "🚀");
+    }
+
+    function handleAuthAction() {
+      if (isDemoMode) {
+        isDemoMode = false;
+        showLoginView();
+      } else if (typeof firebase !== "undefined" && firebase.auth) {
+        firebase.auth().signOut().then(() => {
+          showLoginView();
+          showToast("Signed out successfully.", "👋");
+        });
+      }
+    }
+
+    function showLoginView() {
+      document.getElementById("loginView").style.display = "flex";
+      document.getElementById("adminDashboard").style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showDashboard() {
+      document.getElementById("loginView").style.display = "none";
+      document.getElementById("adminDashboard").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function refreshData() {
+      showToast("Syncing database with server...", "🔄");
+      syncLiveServerDatabase();
+    }
+
+    /* ============================================================
+       TOP PERFORMERS PODIUM // WHO SCORED THE MOST
+       ============================================================ */
+    function renderPodium() {
+      const grid = document.getElementById("podiumGrid");
+      if (!grid) return;
+
+      // Find top scorers from students or quiz submissions
+      let topPerformers = [];
+      if (rawStudents.length > 0) {
+        topPerformers = rawStudents.filter(s => (s.quizScore || s.totalScore || 0) > 0).slice(0, 3);
+      }
+
+      if (topPerformers.length === 0) {
+        const quizSubs = rawSubmissions.filter(s => s.type === "knowledge_quiz" && typeof s.score === "number")
+          .sort((a,b) => (b.score || 0) - (a.score || 0));
+        topPerformers = quizSubs.slice(0, 3).map((q, idx) => ({
+          studentName: q.studentName,
+          studentId: q.studentId,
+          school: q.school,
+          stream: q.stream,
+          quizScore: q.score,
+          quizTotal: q.totalQuestions || 15,
+          quizPercentage: q.percentage || Math.round((q.score/15)*100),
+          timeFormatted: q.timeFormatted,
+          rank: idx + 1,
+          careerTopMatch: "Artificial Intelligence"
+        }));
+      }
+
+      if (topPerformers.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #BAC2E2; padding: 2.5rem 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👑</div>
+            <h3 style="color: #FFFFFF; font-size: 1.25rem; margin-bottom: 0.25rem;">Awaiting First Completed Quiz</h3>
+            <p style="font-size: 0.9rem;">As students complete the Knowledge Quiz, the highest scorers will automatically be crowned here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const p1 = topPerformers[0];
+      const p2 = topPerformers[1];
+      const p3 = topPerformers[2];
+
+      grid.innerHTML = `
+        <!-- Rank 2: High Scorer (Silver) -->
+        <div class="podium-card rank-2">
+          <div class="podium-medal-badge">🥈</div>
+          <div class="podium-rank-tag">RANK #2 · HIGH SCORER</div>
+          <h3 class="podium-student-name">${escapeHtml(p2 ? p2.studentName : "--")}</h3>
+          <div class="podium-school-meta">${escapeHtml(p2 ? (p2.school || '12th Standard') : 'Awaiting participant')}</div>
+          <div class="podium-score-pill">
+            <span>Score:</span> <span>${p2 ? `${p2.quizScore || 0} / 15` : '--'}</span> 
+            <span style="font-size: 0.82rem; opacity: 0.85;">(${p2 ? `${p2.quizPercentage || 0}%` : '--'})</span>
+          </div>
+          <div class="podium-career-match">
+            🎯 Match: <strong>${escapeHtml(p2 ? (p2.careerTopMatch || 'Engineering') : '--')}</strong>
+          </div>
+        </div>
+
+        <!-- Rank 1: Supreme Top Performer (Gold Center) -->
+        <div class="podium-card rank-1">
+          <div class="podium-crown-badge">👑</div>
+          <div class="podium-rank-tag">RANK #1 · TOP PERFORMER</div>
+          <h3 class="podium-student-name">${escapeHtml(p1 ? p1.studentName : "--")}</h3>
+          <div class="podium-school-meta">${escapeHtml(p1 ? (p1.school || '12th Standard') : 'Awaiting participant')}</div>
+          <div class="podium-score-pill">
+            <span>Score:</span> <span>${p1 ? `${p1.quizScore || 0} / 15` : '--'}</span>
+            <span style="font-size: 0.82rem; opacity: 0.9;">(${p1 ? `${p1.quizPercentage || 0}%` : '--'})</span>
+          </div>
+          <div class="podium-career-match">
+            🎯 Match: <strong>${escapeHtml(p1 ? (p1.careerTopMatch || 'AI & Machine Learning') : '--')}</strong>
+          </div>
+        </div>
+
+        <!-- Rank 3: Ace Performer (Bronze/Violet) -->
+        <div class="podium-card rank-3">
+          <div class="podium-medal-badge">🥉</div>
+          <div class="podium-rank-tag">RANK #3 · TOP SCORER</div>
+          <h3 class="podium-student-name">${escapeHtml(p3 ? p3.studentName : "--")}</h3>
+          <div class="podium-school-meta">${escapeHtml(p3 ? (p3.school || '12th Standard') : 'Awaiting participant')}</div>
+          <div class="podium-score-pill">
+            <span>Score:</span> <span>${p3 ? `${p3.quizScore || 0} / 15` : '--'}</span>
+            <span style="font-size: 0.82rem; opacity: 0.85;">(${p3 ? `${p3.quizPercentage || 0}%` : '--'})</span>
+          </div>
+          <div class="podium-career-match">
+            🎯 Match: <strong>${escapeHtml(p3 ? (p3.careerTopMatch || 'Engineering') : '--')}</strong>
+          </div>
+        </div>
+      `;
+
+      // Update HUD metric for top performer
+      const statTopScore = document.getElementById("statTopPerformerScore");
+      const statTopName = document.getElementById("statTopPerformerName");
+      if (p1 && statTopScore && statTopName) {
+        statTopScore.innerText = `${p1.quizScore || 0} / 15 (${p1.quizPercentage || 0}%)`;
+        statTopName.innerText = `👑 Top Scorer: ${p1.studentName}`;
+      }
+    }
+
+    /* ============================================================
+       LIVE STUDENTS PRESENCE TICKER
+       ============================================================ */
+    function renderPresence() {
+      const container = document.getElementById("livePresenceRow");
+      const countEl = document.getElementById("liveActiveCount");
+      if (!container) return;
+
+      const students = rawStudents.length > 0 ? rawStudents : rawSubmissions.map(s => ({
+        studentId: s.studentId,
+        studentName: s.studentName,
+        status: s.type === "career_profile" ? "Completed Career Profile" : (s.type === "knowledge_quiz" ? "Completed Quiz" : "Active in Workshop")
+      }));
+
+      // Deduplicate by studentId
+      const uniqueMap = new Map();
+      students.forEach(s => {
+        if (s.studentId && !uniqueMap.has(s.studentId)) {
+          uniqueMap.set(s.studentId, s);
+        }
+      });
+      const uniqueList = Array.from(uniqueMap.values());
+
+      if (countEl) countEl.innerText = uniqueList.length;
+
+      if (uniqueList.length === 0) {
+        container.innerHTML = `<span style="font-size: 0.85rem; color: #BAC2E2;">Waiting for students to join...</span>`;
+        return;
+      }
+
+      container.innerHTML = uniqueList.map(s => `
+        <div class="presence-student-chip" onclick="openStudentDossier('${escapeHtml(s.studentId)}')">
+          <span class="presence-dot"></span>
+          <span>${escapeHtml(s.studentName)}</span>
+          <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--admin-cyan);">(${escapeHtml(s.studentId)})</span>
+        </div>
+      `).join("");
+    }
+
+    /* ============================================================
+       TAB SWITCHING
+       ============================================================ */
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      const tabs = ["submissions", "database", "analytics"];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn${capitalize(t)}`);
+        const view = document.getElementById(`tabView${capitalize(t)}`);
+        if (btn) btn.classList.toggle("active", t === tab);
+        if (view) view.style.display = t === tab ? "block" : "none";
+      });
+
+      if (tab === "database") {
+        renderDatabaseViews();
+      } else if (tab === "analytics") {
+        renderCareerDomainChart();
+      }
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function toggleTopScorersFilter() {
+      filterOnlyTopScorers = !filterOnlyTopScorers;
+      const btn = document.getElementById("btnFilterTopScorers");
+      if (btn) {
+        btn.classList.toggle("active", filterOnlyTopScorers);
+        btn.innerText = filterOnlyTopScorers ? "✓ Showing Top Scorers" : "🏆 Show Top Scorers Only";
+      }
+      applyFilters();
+    }
+
+    /* ============================================================
+       FILTERING & TABLE RENDERING
+       ============================================================ */
+    function applyFilters() {
+      const searchTerm = (document.getElementById("filterSearch")?.value || "").toLowerCase().trim();
+      const filterClass = document.getElementById("filterClass")?.value || "all";
+      const filterStream = document.getElementById("filterStream")?.value || "all";
+      const filterType = document.getElementById("filterType")?.value || "all";
+
+      filteredSubmissions = rawSubmissions.filter(item => {
+        // Top scorers filter
+        if (filterOnlyTopScorers) {
+          if (item.type !== "knowledge_quiz") return false;
+          if (typeof item.score !== "number" || item.score < 11) return false;
+        }
+
+        // Search filter
+        if (searchTerm) {
+          const name = (item.studentName || "").toLowerCase();
+          const sid = (item.studentId || "").toLowerCase();
+          const school = (item.school || "").toLowerCase();
+          const stream = (item.stream || "").toLowerCase();
+          if (!name.includes(searchTerm) && !sid.includes(searchTerm) && !school.includes(searchTerm) && !stream.includes(searchTerm)) {
+            return false;
+          }
+        }
+
+        // Class filter
+        if (filterClass !== "all" && item.classGrade && item.classGrade !== filterClass) return false;
+
+        // Stream filter
+        if (filterStream !== "all" && item.stream && item.stream !== filterStream) return false;
+
+        // Type filter
+        if (filterType !== "all" && item.type !== filterType) return false;
+
+        return true;
+      });
+
+      renderMetrics();
+      renderSubmissionsTable();
+
+      const badge = document.getElementById("tabBadgeSubmissions");
+      if (badge) badge.innerText = filteredSubmissions.length;
+    }
+
+    function resetFilters() {
+      const search = document.getElementById("filterSearch");
+      if (search) search.value = "";
+      const fClass = document.getElementById("filterClass");
+      if (fClass) fClass.value = "all";
+      const fStream = document.getElementById("filterStream");
+      if (fStream) fStream.value = "all";
+      const fType = document.getElementById("filterType");
+      if (fType) fType.value = "all";
+      filterOnlyTopScorers = false;
+      const btn = document.getElementById("btnFilterTopScorers");
+      if (btn) {
+        btn.classList.remove("active");
+        btn.innerText = "🏆 Show Top Scorers Only";
+      }
+      applyFilters();
+    }
+
+    function renderMetrics() {
+      // Unique Students
+      const studentSet = new Set(rawSubmissions.map(x => x.studentId).filter(Boolean));
+      if (rawStudents.length > 0) rawStudents.forEach(s => studentSet.add(s.studentId));
+      document.getElementById("statUniqueStudents").innerText = studentSet.size;
+
+      // Class Avg Knowledge Score
+      const quizzes = rawSubmissions.filter(x => x.type === "knowledge_quiz" && typeof x.score === "number");
+      if (quizzes.length > 0) {
+        const sum = quizzes.reduce((acc, cur) => acc + cur.score, 0);
+        const avg = (sum / quizzes.length).toFixed(1);
+        const pct = Math.round((sum / (quizzes.length * 15)) * 100);
+        document.getElementById("statAvgScore").innerText = `${avg} / 15`;
+        document.getElementById("statAvgPct").innerText = `${pct}% average (${quizzes.length} tests)`;
+      } else {
+        document.getElementById("statAvgScore").innerText = "0 / 15";
+        document.getElementById("statAvgPct").innerText = "Awaiting quizzes";
+      }
+
+      // Dominant Career Domain
+      const domainTally = {};
+      rawSubmissions.forEach(item => {
+        if (item.type === "career_profile" && Array.isArray(item.topMatches) && item.topMatches[0]) {
+          const title = item.topMatches[0].title;
+          domainTally[title] = (domainTally[title] || 0) + 1;
+        }
+      });
+      const sorted = Object.entries(domainTally).sort((a,b) => b[1] - a[1]);
+      if (sorted.length > 0) {
+        document.getElementById("statTopDomain").innerText = sorted[0][0];
+        document.getElementById("statTopDomainSub").innerText = `${sorted[0][1]} students (#1 match)`;
+      }
+    }
+
+    function renderSubmissionsTable() {
+      const tbody = document.getElementById("submissionsTableBody");
+      if (!tbody) return;
+
+      if (filteredSubmissions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+              No matching submissions found in the database.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredSubmissions.map(item => {
+        const timeMillis = parseTime(item);
+        const timeFormatted = timeMillis ? new Date(timeMillis).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : "Just now";
+        const isCareer = item.type === "career_profile";
+        const isQuiz = item.type === "knowledge_quiz";
+        const isReg = item.type === "student_registered";
+        const isGym = item.type === "prompt_gym";
+
+        // Rank badge logic (WHO SCORED THE MOST)
+        let rankBadgeHtml = `<span style="font-family: var(--font-mono); font-size: 0.8rem; color: #BAC2E2;">--</span>`;
+        let rowClass = "";
+        if (isQuiz) {
+          if (item.score >= 14) {
+            rankBadgeHtml = `<span class="score-badge-gold">👑 #1 TOP SCORER</span>`;
+            rowClass = "row-top-1";
+          } else if (item.score >= 13) {
+            rankBadgeHtml = `<span class="score-badge-silver">🥈 #2 HIGH SCORER</span>`;
+            rowClass = "row-top-2";
+          } else if (item.score >= 11) {
+            rankBadgeHtml = `<span class="score-badge-bronze">🥉 #3 SCORER</span>`;
+            rowClass = "row-top-3";
+          } else {
+            rankBadgeHtml = `<span style="font-family: var(--font-mono); font-weight: 700; color: #BAC2E2;">${item.score}/15</span>`;
+          }
+        } else if (isReg) {
+          rankBadgeHtml = `<span style="font-family: var(--font-mono); font-size: 0.78rem; color: #34D399; font-weight: 800;">⚡ JOINED</span>`;
+        } else if (isCareer) {
+          rankBadgeHtml = `<span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--admin-cyan); font-weight: 800;">🎯 PROFILED</span>`;
+        }
+
+        // Result text
+        let resultHtml = "";
+        if (isCareer) {
+          const top = Array.isArray(item.topMatches) && item.topMatches[0] ? item.topMatches[0] : null;
+          resultHtml = top ? `<strong>${escapeHtml(top.emoji || '🎯')} ${escapeHtml(top.title || '')}</strong> (${top.percentage || top.matchPct || ''}%)` : "Profile Complete";
+        } else if (isQuiz) {
+          resultHtml = `<strong>${item.score || 0} / 15 (${item.percentage || 0}%)</strong> · ${escapeHtml(item.badge || "")}`;
+        } else if (isReg) {
+          resultHtml = `<span style="color: #34D399;">Student registered in session</span>`;
+        } else if (isGym) {
+          resultHtml = `<strong>Prompt Score: ${item.promptScore || 0} / 5</strong>`;
+        }
+
+        let typePill = `<span class="type-pill career">Career Profile</span>`;
+        if (isQuiz) typePill = `<span class="type-pill quiz">Knowledge Quiz</span>`;
+        if (isReg) typePill = `<span class="type-pill registered">Student Joined</span>`;
+        if (isGym) typePill = `<span class="type-pill gym">Prompt Gym</span>`;
+
+        return `
+          <tr class="${rowClass}">
+            <td>${rankBadgeHtml}</td>
+            <td style="color: #BAC2E2; white-space: nowrap; font-size: 0.85rem;">${timeFormatted}</td>
+            <td><span class="student-badge" style="cursor: pointer;" onclick="openStudentDossier('${escapeHtml(item.studentId)}')">${escapeHtml(item.studentId || "N/A")}</span></td>
+            <td style="font-weight: 800; color: #FFFFFF;">${escapeHtml(item.studentName || "Anonymous")}</td>
+            <td style="color: #BAC2E2; font-size: 0.86rem;">${escapeHtml(item.school || "12th Standard")} ${item.stream ? `· ${escapeHtml(item.stream)}` : ''}</td>
+            <td>${typePill}</td>
+            <td>${resultHtml}</td>
+            <td style="text-align: right;">
+              <button class="btn btn-outline btn-sm" onclick="openDetails('${escapeHtml(item.id || '')}')" title="View complete answers">
+                👁️ Dossier
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* ============================================================
+       TAB 2: DATABASE MATRIX VIEWS
+       ============================================================ */
+    function switchDatabaseSubview(view) {
+      currentDatabaseSubview = view;
+      document.getElementById("dbSubnavStudents").classList.toggle("active", view === "students");
+      document.getElementById("dbSubnavSubmissions").classList.toggle("active", view === "submissions");
+      document.getElementById("dbSubnavRaw").classList.toggle("active", view === "raw");
+
+      document.getElementById("dbViewStudents").style.display = view === "students" ? "block" : "none";
+      document.getElementById("dbViewSubmissions").style.display = view === "submissions" ? "block" : "none";
+      document.getElementById("dbViewRaw").style.display = view === "raw" ? "block" : "none";
+
+      renderDatabaseViews();
+    }
+
+    function renderDatabaseViews() {
+      // Update badge counts
+      const badge = document.getElementById("tabBadgeDatabase");
+      const stCount = document.getElementById("dbStudentsCount");
+      const subCount = document.getElementById("dbSubmissionsCount");
+      if (badge) badge.innerText = `${rawStudents.length} Students`;
+      if (stCount) stCount.innerText = rawStudents.length;
+      if (subCount) subCount.innerText = rawSubmissions.length;
+
+      // 1. Students Table
+      const stBody = document.getElementById("dbStudentsTableBody");
+      if (stBody) {
+        if (rawStudents.length === 0) {
+          stBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #BAC2E2; padding: 2rem;">No students in database yet.</td></tr>`;
+        } else {
+          stBody.innerHTML = rawStudents.map(st => {
+            let rankBadge = `<span style="font-family: var(--font-mono); font-size: 0.85rem; color: #BAC2E2;">#${st.rank || '--'}</span>`;
+            if (st.rank === 1) rankBadge = `<span class="score-badge-gold">👑 #1</span>`;
+            else if (st.rank === 2) rankBadge = `<span class="score-badge-silver">🥈 #2</span>`;
+            else if (st.rank === 3) rankBadge = `<span class="score-badge-bronze">🥉 #3</span>`;
+
+            return `
+              <tr class="${st.rank === 1 ? 'row-top-1' : (st.rank === 2 ? 'row-top-2' : '')}">
+                <td>${rankBadge}</td>
+                <td><span class="student-badge">${escapeHtml(st.studentId)}</span></td>
+                <td style="font-weight: 800; color: #FFFFFF;">${escapeHtml(st.studentName)}</td>
+                <td style="color: #BAC2E2;">${escapeHtml(st.school || 'SSMIET')} ${st.stream ? `· ${escapeHtml(st.stream)}` : ''}</td>
+                <td><span class="type-pill registered">${escapeHtml(st.status || 'Active')}</span></td>
+                <td style="font-family: var(--font-mono); font-weight: 800; color: ${st.quizScore >= 12 ? 'var(--admin-gold)' : 'var(--admin-cyan)'};">
+                  ${typeof st.quizScore === 'number' && st.quizScore > 0 ? `${st.quizScore} / 15 (${st.quizPercentage || Math.round((st.quizScore/15)*100)}%)` : '--'}
+                </td>
+                <td style="font-family: var(--font-mono); color: #FCD34D;">${st.promptScore ? `${st.promptScore} / 5` : '--'}</td>
+                <td>${escapeHtml(st.careerTopMatch || '--')}</td>
+                <td style="font-size: 0.82rem; color: #BAC2E2;">${st.registeredAt ? new Date(st.registeredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--'}</td>
+                <td style="text-align: right;">
+                  <button class="btn btn-outline btn-sm" onclick="openStudentDossier('${escapeHtml(st.studentId)}')">
+                    View
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join("");
+        }
+      }
+
+      // 2. Submissions Table
+      const subBody = document.getElementById("dbSubmissionsTableBody");
+      if (subBody) {
+        subBody.innerHTML = rawSubmissions.map(s => `
+          <tr>
+            <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--admin-cyan);">${escapeHtml(s.id || '--')}</td>
+            <td><span class="type-pill ${s.type === 'career_profile' ? 'career' : 'quiz'}">${escapeHtml(s.type || '--')}</span></td>
+            <td><strong>${escapeHtml(s.studentName || '--')}</strong> (${escapeHtml(s.studentId || '--')})</td>
+            <td style="font-size: 0.82rem; color: #BAC2E2;">${s.createdAt ? new Date(s.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '--'}</td>
+            <td style="font-size: 0.85rem; color: #FFFFFF;">${s.type === 'career_profile' ? `Stream: ${s.stream || '--'}, Top: ${s.topMatches && s.topMatches[0] ? s.topMatches[0].title : '--'}` : (s.type === 'knowledge_quiz' ? `Score: ${s.score}/15 (${s.percentage}%)` : s.status || '--')}</td>
+            <td style="text-align: right;">
+              <button class="btn btn-outline btn-sm" onclick="openDetails('${escapeHtml(s.id || '')}')">
+                Details
+              </button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      // 3. Raw JSON Inspector
+      const jsonCode = document.getElementById("dbRawJsonCode");
+      const lastUpdatedEl = document.getElementById("dbRawLastUpdated");
+      if (jsonCode) {
+        jsonCode.innerText = JSON.stringify(fullRawDatabase, null, 2);
+      }
+      if (lastUpdatedEl && fullRawDatabase.lastUpdated) {
+        lastUpdatedEl.innerText = `Last Updated: ${new Date(fullRawDatabase.lastUpdated).toLocaleTimeString()}`;
+      }
+    }
+
+    function exportDatabaseJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullRawDatabase, null, 2));
+      const a = document.createElement("a");
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", `ai_explorer_database_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("Downloaded database.json! 💾", "✅");
+    }
+
+    function copyDatabaseJSON() {
+      const text = JSON.stringify(fullRawDatabase, null, 2);
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Database JSON copied to clipboard! 📋", "✅");
+      }).catch(() => {
+        showToast("Failed to copy JSON.", "⚠️");
+      });
+    }
+
+    /* ============================================================
+       CAREER DOMAIN ANALYTICS CHART
+       ============================================================ */
+    function renderCareerDomainChart() {
+      const container = document.getElementById("careerChartContainer");
+      const careerProfiles = rawSubmissions.filter(x => x.type === "career_profile");
+
+      if (careerProfiles.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: #BAC2E2; padding: 2.5rem 1rem;">
+            No career profile submissions yet in the database.
+          </div>
+        `;
+        return;
+      }
+
+      const domainTally = {};
+      careerProfiles.forEach(item => {
+        if (Array.isArray(item.topMatches)) {
+          item.topMatches.forEach((m, idx) => {
+            const key = m.title || m.id;
+            const emoji = m.emoji || "🎯";
+            if (!domainTally[key]) {
+              domainTally[key] = { title: key, emoji, count: 0 };
+            }
+            if (idx === 0) domainTally[key].count += 1;
+          });
+        }
+      });
+
+      const list = Object.values(domainTally).sort((a,b) => b.count - a.count);
+      const maxCount = Math.max(...list.map(x => x.count), 1);
+
+      container.innerHTML = list.map(d => {
+        const pct = Math.round((d.count / careerProfiles.length) * 100);
+        const barWidth = Math.max(Math.round((d.count / maxCount) * 100), 5);
+        return `
+          <div class="chart-row">
+            <div class="chart-label">
+              <span>${escapeHtml(d.emoji)}</span>
+              <span>${escapeHtml(d.title)}</span>
+            </div>
+            <div class="chart-track">
+              <div class="chart-fill" style="width: ${barWidth}%;"></div>
+            </div>
+            <div class="chart-count">${d.count} (${pct}%)</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    /* ============================================================
+       STUDENT DOSSIER DRAWER
+       ============================================================ */
+    function openStudentDossier(studentId) {
+      const student = rawStudents.find(s => s.studentId === studentId);
+      const studentSubs = rawSubmissions.filter(s => s.studentId === studentId);
+      const careerSub = studentSubs.find(s => s.type === "career_profile");
+      const quizSub = studentSubs.find(s => s.type === "knowledge_quiz");
+
+      const drawer = document.getElementById("detailDrawer");
+      const title = document.getElementById("drawerTitle");
+      const body = document.getElementById("drawerBody");
+
+      const name = student ? student.studentName : (studentSubs[0] ? studentSubs[0].studentName : "Explorer");
+      title.innerText = `Explorer Dossier: ${name}`;
+
+      let html = `
+        <div class="dossier-hero">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.6rem; color: #FFFFFF; margin: 0;">${escapeHtml(name)}</h3>
+            <span class="student-badge" style="font-size: 0.9rem;">${escapeHtml(studentId)}</span>
+          </div>
+          <div style="font-size: 0.9rem; color: #DDF7FF;">
+            🏫 School: <strong>${escapeHtml((student && student.school) || (careerSub && careerSub.school) || '12th Standard')}</strong>
+            ${(student && student.stream) || (careerSub && careerSub.stream) ? ` · Stream: <strong>${escapeHtml((student && student.stream) || careerSub.stream)}</strong>` : ''}
+          </div>
+          <div style="display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap;">
+            <span class="score-badge-gold">👑 Global Rank: #${student ? student.rank || 1 : 1}</span>
+            <span class="score-badge-silver">🧠 Quiz Score: ${student ? `${student.quizScore || 0} / 15` : (quizSub ? `${quizSub.score || 0} / 15` : '--')}</span>
+          </div>
+        </div>
+      `;
+
+      // Career Profile Section
+      if (careerSub) {
+        html += renderCareerDossierHtml(careerSub);
+      }
+
+      // Knowledge Quiz Section
+      if (quizSub) {
+        html += renderQuizDossierHtml(quizSub);
+      }
+
+      body.innerHTML = html;
+      drawer.style.display = "flex";
+    }
+
+    function openDetails(subId) {
+      const item = rawSubmissions.find(x => x.id === subId);
+      if (!item) {
+        showToast("Record not found", "⚠️");
+        return;
+      }
+
+      const drawer = document.getElementById("detailDrawer");
+      const title = document.getElementById("drawerTitle");
+      const body = document.getElementById("drawerBody");
+
+      title.innerText = item.type === "career_profile" ? `Career Profile: ${item.studentName}` : `Knowledge Quiz: ${item.studentName}`;
+
+      let html = `
+        <div class="dossier-hero">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.5rem; color: #FFFFFF; margin: 0;">${escapeHtml(item.studentName)}</h3>
+            <span class="student-badge">${escapeHtml(item.studentId)}</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #DDF7FF; margin-top: 0.35rem;">
+            Submission ID: <code style="color: var(--admin-cyan);">${escapeHtml(item.id)}</code> · ${item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}
+          </div>
+        </div>
+      `;
+
+      if (item.type === "career_profile") {
+        html += renderCareerDossierHtml(item);
+      } else if (item.type === "knowledge_quiz") {
+        html += renderQuizDossierHtml(item);
+      } else {
+        html += `
+          <div class="dossier-section">
+            <div class="dossier-section-title">Registration Record</div>
+            <p style="color: #BAC2E2;">Participant registered in workshop at ${new Date(item.createdAt).toLocaleTimeString()}.</p>
+          </div>
+        `;
+      }
+
+      body.innerHTML = html;
+      drawer.style.display = "flex";
+    }
+
+    function renderCareerDossierHtml(item) {
+      return `
+        <div class="dossier-section">
+          <div class="dossier-section-title">🎓 Academic & Personal Calibration</div>
+          <div class="dossier-field-grid">
+            <div class="dossier-field-item"><label>School Name</label><span>${escapeHtml(item.school || 'Unspecified')}</span></div>
+            <div class="dossier-field-item"><label>District / City</label><span>${escapeHtml(item.district || 'Not provided')}</span></div>
+            <div class="dossier-field-item"><label>Class Level</label><span>${escapeHtml(item.classGrade || '12th')}</span></div>
+            <div class="dossier-field-item"><label>Stream</label><span>${escapeHtml(item.stream || 'PCM')}</span></div>
+            <div class="dossier-field-item"><label>Maths Comfort</label><span><strong>${item.mathComfort || 3} / 5</strong></span></div>
+            <div class="dossier-field-item"><label>Coding Comfort</label><span><strong>${item.codingComfort || 1} / 5</strong></span></div>
+            <div class="dossier-field-item"><label>Work Style</label><span>${escapeHtml(item.workStyle || 'Mix')}</span></div>
+            <div class="dossier-field-item"><label>Environment</label><span>${escapeHtml(item.environmentPref || 'Mix')}</span></div>
+          </div>
+          <div style="margin-top: 1rem;">
+            <label style="font-size: 0.76rem; color: var(--text-subtle); text-transform: uppercase;">Favourite Subjects:</label>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.35rem;">
+              ${Array.isArray(item.favSubjects) && item.favSubjects.length ? item.favSubjects.map(s => `<span class="type-pill career">${escapeHtml(s)}</span>`).join('') : '<span style="color:#BAC2E2;">None selected</span>'}
+            </div>
+          </div>
+          <div style="margin-top: 0.85rem;">
+            <label style="font-size: 0.76rem; color: var(--text-subtle); text-transform: uppercase;">10-Year Vision Goal:</label>
+            <p style="font-size: 0.95rem; color: #FFFFFF; font-style: italic; margin: 0.25rem 0 0 0;">"${escapeHtml(item.tenYearGoal || 'Not specified')}"</p>
+          </div>
+        </div>
+
+        <div class="dossier-section">
+          <div class="dossier-section-title">🎯 Top 3 Recommended Career Matches</div>
+          ${Array.isArray(item.topMatches) ? item.topMatches.map((m, idx) => `
+            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <strong style="color: #FFFFFF; font-size: 1.05rem;">${escapeHtml(m.emoji || '🎯')} ${escapeHtml(m.title || '')}</strong>
+                <span class="score-badge-gold">${m.percentage || m.matchPct || ''}% Compatibility · #${idx+1}</span>
+              </div>
+              <p style="font-size: 0.88rem; color: #DDF7FF; margin: 0 0 0.4rem 0;">✨ <strong>Why it fits:</strong> ${escapeHtml(m.why || m.whyFits || '')}</p>
+              ${m.whyResistant ? `<p style="font-size: 0.85rem; color: #BAC2E2; margin: 0 0 0.4rem 0;">🛡️ <strong>Why AI won't replace it:</strong> ${escapeHtml(m.whyResistant)}</p>` : ''}
+              ${m.skills ? `<p style="font-size: 0.82rem; color: #BAC2E2; margin: 0;">🔑 <strong>Skills:</strong> ${escapeHtml(m.skills)}</p>` : ''}
+            </div>
+          `).join('') : '<p style="color:#BAC2E2;">No career matches found.</p>'}
+        </div>
+
+        ${Array.isArray(item.scenarioAnswers) && item.scenarioAnswers.length ? `
+          <div class="dossier-section">
+            <div class="dossier-section-title">⚡ 6 Decision Dilemmas Breakdown</div>
+            ${item.scenarioAnswers.map(sc => `
+              <div style="margin-bottom: 0.85rem; padding-bottom: 0.65rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                <div style="font-weight: 700; color: #FFFFFF; font-size: 0.88rem; margin-bottom: 0.25rem;">Scenario #${sc.scenarioNum || ''}: ${escapeHtml(sc.question || '')}</div>
+                <div style="font-size: 0.85rem; color: var(--admin-cyan);">Chosen [${sc.chosenOptionLetter || ''}]: ${escapeHtml(sc.chosenAnswer || '')}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${item.profileAnalysis ? `
+          <div class="dossier-section">
+            <div class="dossier-section-title">🌟 Profile Intelligence Dossier</div>
+            <p style="font-size: 0.88rem; color: #BAC2E2; margin-bottom: 0.5rem;"><strong>Strengths:</strong> ${escapeHtml(item.profileAnalysis.strengths || '')}</p>
+            <p style="font-size: 0.88rem; color: #BAC2E2; margin-bottom: 0.5rem;"><strong>Skills to Build:</strong> ${escapeHtml(item.profileAnalysis.skillsToBuild || '')}</p>
+            <p style="font-size: 0.88rem; color: #BAC2E2; margin: 0;"><strong>Recommended Backup Path:</strong> ${escapeHtml(item.profileAnalysis.backupPath || '')}</p>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function renderQuizDossierHtml(item) {
+      return `
+        <div class="dossier-section">
+          <div class="dossier-section-title">🧠 Knowledge Quiz Performance</div>
+          <div class="dossier-field-grid">
+            <div class="dossier-field-item"><label>Final Score</label><span style="color: var(--admin-gold); font-size: 1.25rem;">${item.score || 0} / ${item.totalQuestions || 15} (${item.percentage || 0}%)</span></div>
+            <div class="dossier-field-item"><label>Achievement Badge</label><span>${escapeHtml(item.badge || 'AI Explorer')}</span></div>
+            <div class="dossier-field-item"><label>Time Taken</label><span>${escapeHtml(item.timeFormatted || (item.timeSeconds ? `${item.timeSeconds}s` : 'N/A'))}</span></div>
+            <div class="dossier-field-item"><label>Incorrect Answers</label><span style="color: #F87171;">${item.wrongAnswersCount !== undefined ? item.wrongAnswersCount : (15 - (item.score || 0))}</span></div>
+          </div>
+        </div>
+
+        ${Array.isArray(item.answersSummary) && item.answersSummary.length ? `
+          <div class="dossier-section">
+            <div class="dossier-section-title">📝 Question by Question Review</div>
+            ${item.answersSummary.map((a, i) => `
+              <div style="margin-bottom: 0.85rem; padding-bottom: 0.65rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                <div style="font-weight: 700; color: #FFFFFF; font-size: 0.88rem;">${i+1}. ${escapeHtml(a.question || '')}</div>
+                <div style="font-size: 0.84rem; margin-top: 0.2rem; color: ${a.correct || a.isCorrect ? '#34D399' : '#F87171'};">
+                  ${a.correct || a.isCorrect ? '✅ Correct' : '❌ Your Answer: ' + escapeHtml(a.yourAnswer || '')}
+                </div>
+                ${!a.correct && !a.isCorrect && a.correctAnswer ? `<div style="font-size: 0.82rem; color: #34D399;">Correct Answer: ${escapeHtml(a.correctAnswer)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function closeDrawer(event) {
+      if (event && event.target !== event.currentTarget) return;
+      const drawer = document.getElementById("detailDrawer");
+      if (drawer) drawer.style.display = "none";
+    }
+
+    /* ============================================================
+       CSV EXPORT
+       ============================================================ */
+    function exportCSV() {
+      if (rawSubmissions.length === 0) {
+        showToast("No submissions to export.", "⚠️");
+        return;
+      }
+
+      const headers = ["Timestamp", "Student ID", "Student Name", "School", "Class", "Stream", "Type", "Score / Result", "Details"];
+      const rows = rawSubmissions.map(item => {
+        const time = item.createdAt ? new Date(item.createdAt).toISOString() : "";
+        const sid = item.studentId || "";
+        const name = item.studentName || "";
+        const school = item.school || "";
+        const classG = item.classGrade || "";
+        const stream = item.stream || "";
+        const type = item.type || "";
+        const score = item.type === "knowledge_quiz" ? `${item.score}/15 (${item.percentage}%)` : (item.topMatches && item.topMatches[0] ? item.topMatches[0].title : "");
+        const details = item.type === "career_profile" ? (item.tenYearGoal || "") : (item.badge || "");
+
+        return [time, sid, name, school, classG, stream, type, score, details].map(val => `"${String(val).replace(/"/g, '""')}"`).join(",");
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `ai_explorer_workshop_submissions_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast("CSV export downloaded successfully! 📊", "✅");
+    }
+
+    function parseTime(record) {
+      if (!record) return 0;
+      if (record.timestamp) {
+        if (record.timestamp.toMillis) return record.timestamp.toMillis();
+        if (record.timestamp.seconds) return record.timestamp.seconds * 1000;
+        const d = new Date(record.timestamp);
+        if (!isNaN(d.getTime())) return d.getTime();
+      }
+      if (record.createdAt) {
+        const d = new Date(record.createdAt);
+        if (!isNaN(d.getTime())) return d.getTime();
+      }
+      return 0;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(msg, icon = "ℹ️") {
+      const box = document.getElementById("toastBox");
+      const iconEl = document.getElementById("toastIcon");
+      const msgEl = document.getElementById("toastMsg");
+      if (!box) return;
+
+      iconEl.innerText = icon;
+      msgEl.innerText = msg;
+      box.style.display = "flex";
+
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        box.style.display = "none";
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

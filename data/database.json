@@ -1,0 +1,331 @@
+{
+  "students": [
+    {
+      "studentId": "EXP-8472",
+      "studentName": "Priya Sharma",
+      "registeredAt": "2026-10-30T15:23:58.593Z",
+      "lastActive": "2026-10-30T15:48:58.593Z",
+      "school": "Kendriya Vidyalaya",
+      "district": "Dindigul",
+      "classGrade": "12th",
+      "stream": "PCM",
+      "status": "Completed All Phases",
+      "quizScore": 14,
+      "quizTotal": 15,
+      "quizPercentage": 93,
+      "timeSeconds": 184,
+      "badge": "AI Champion 🏆",
+      "promptScore": 5,
+      "totalScore": 19,
+      "rank": 1,
+      "isTopPerformer": true,
+      "careerTopMatch": "Artificial Intelligence & ML Engineer",
+      "careerTopMatchPct": 95
+    },
+    {
+      "studentId": "EXP-3190",
+      "studentName": "Arjun Verma",
+      "registeredAt": "2026-10-30T15:28:58.593Z",
+      "lastActive": "2026-10-30T15:53:58.593Z",
+      "school": "SSMIET Matric School",
+      "district": "Dindigul",
+      "classGrade": "12th",
+      "stream": "PCB",
+      "status": "Completed Knowledge Quiz",
+      "quizScore": 13,
+      "quizTotal": 15,
+      "quizPercentage": 87,
+      "timeSeconds": 195,
+      "badge": "AI Explorer Pro 🌟",
+      "promptScore": 4,
+      "totalScore": 17,
+      "rank": 2,
+      "isTopPerformer": true,
+      "careerTopMatch": "Biomedical & AI Health Systems",
+      "careerTopMatchPct": 91
+    },
+    {
+      "studentId": "EXP-5521",
+      "studentName": "Karthik Sundaram",
+      "registeredAt": "2026-10-30T15:38:58.593Z",
+      "lastActive": "2026-10-30T15:58:58.593Z",
+      "school": "St. Joseph's HSS",
+      "district": "Madurai",
+      "classGrade": "12th",
+      "stream": "PCMB",
+      "status": "Completed Knowledge Quiz",
+      "quizScore": 12,
+      "quizTotal": 15,
+      "quizPercentage": 80,
+      "timeSeconds": 210,
+      "badge": "AI Explorer Pro 🌟",
+      "promptScore": 5,
+      "totalScore": 17,
+      "rank": 3,
+      "isTopPerformer": true,
+      "careerTopMatch": "Cybersecurity & Neural Defense",
+      "careerTopMatchPct": 88
+    },
+    {
+      "studentId": "EXP-9042",
+      "studentName": "Ananya Rao",
+      "registeredAt": "2026-10-30T15:56:58.593Z",
+      "lastActive": "2026-10-30T16:06:58.593Z",
+      "school": "Vidyodaya Higher Secondary School",
+      "district": "Chennai",
+      "classGrade": "12th",
+      "stream": "Commerce with Maths",
+      "status": "Exploring AI Tools",
+      "quizScore": 0,
+      "quizTotal": 15,
+      "quizPercentage": 0,
+      "promptScore": 4,
+      "totalScore": 4,
+      "rank": 4,
+      "isTopPerformer": false,
+      "careerTopMatch": "Fintech & Algorithmic Trading",
+      "careerTopMatchPct": 86
+    }
+  ],
+  "submissions": [
+    {
+      "id": "sub_seed_1",
+      "type": "career_profile",
+      "studentId": "EXP-8472",
+      "studentName": "Priya Sharma",
+      "createdAt": "2026-10-30T15:33:58.593Z",
+      "school": "Kendriya Vidyalaya",
+      "district": "Dindigul",
+      "classGrade": "12th",
+      "stream": "PCM",
+      "favSubjects": [
+        "Computer Science",
+        "Mathematics",
+        "Physics"
+      ],
+      "mathComfort": 4,
+      "codingComfort": 4,
+      "hobbies": [
+        "building gadgets",
+        "gaming",
+        "solving puzzles"
+      ],
+      "careerPriorities": [
+        "good salary",
+        "creativity"
+      ],
+      "workStyle": "mix",
+      "environmentPref": "desk and computer work",
+      "planAfter12th": "Engineering degree",
+      "tenYearGoal": "Lead a high-scale autonomous robotics or AI infrastructure company in India.",
+      "domainScores": {
+        "ai": 14,
+        "dev": 12,
+        "hw": 9,
+        "sec": 8,
+        "cloud": 7,
+        "data": 6,
+        "design": 5,
+        "xr": 4
+      },
+      "topMatches": [
+        {
+          "id": "ai",
+          "title": "Artificial Intelligence & ML Engineer",
+          "emoji": "🧠",
+          "score": 14,
+          "percentage": 95,
+          "why": "High math and coding comfort combined with a passion for software algorithms and data logic.",
+          "whyResistant": "Requires verifying model safety, designing custom architectures, and evaluating training data for real-world biases.",
+          "skills": "Python, Linear Algebra, PyTorch, Model Evaluation, Data Pipelines, AI Ethics",
+          "firstSteps": [
+            "Learn Python syntax and data handling with NumPy and Pandas.",
+            "Train your first image classification model on Kaggle or Google Colab.",
+            "Join an open-source AI community or participate in a high school hackathon."
+          ],
+          "roadmapTab": "resistant"
+        },
+        {
+          "id": "dev",
+          "title": "Full-Stack Software Engineer",
+          "emoji": "💻",
+          "score": 12,
+          "percentage": 88,
+          "why": "Strong programming aptitude and preference for building scalable digital tools.",
+          "whyResistant": "Translating human business ambiguity into maintainable architectures requires deep human engineering empathy.",
+          "skills": "TypeScript, React, Node.js, SQL, REST APIs, Git",
+          "firstSteps": [
+            "Build and deploy your first interactive web portfolio.",
+            "Learn Git and contribute code to a student open-source project."
+          ],
+          "roadmapTab": "resistant"
+        },
+        {
+          "id": "hw",
+          "title": "Robotics & Hardware Engineer",
+          "emoji": "🤖",
+          "score": 9,
+          "percentage": 76,
+          "why": "Enjoys tinkering with physical gadgets and sensor electronics.",
+          "whyResistant": "Physical world edge cases, analog noise, and real-world mechanical tolerances cannot be simulated by LLMs alone.",
+          "skills": "C/C++, Arduino, ROS, Sensors, Circuit Design, Mechatronics",
+          "firstSteps": [
+            "Order an Arduino starter kit and build an obstacle-avoiding bot.",
+            "Learn basic circuit schematic reading and soldering safety."
+          ],
+          "roadmapTab": "resistant"
+        }
+      ],
+      "profileAnalysis": {
+        "strengths": "High quantitative comfort, logical deduction, and ability to handle complex computational abstractions.",
+        "skillsToBuild": "Explore cloud deployment pipelines and PyTorch machine learning models.",
+        "backupPath": "Cloud Infrastructure & DevOps Engineer"
+      },
+      "consent": true
+    },
+    {
+      "id": "sub_seed_2",
+      "type": "knowledge_quiz",
+      "studentId": "EXP-8472",
+      "studentName": "Priya Sharma",
+      "createdAt": "2026-10-30T15:48:58.593Z",
+      "score": 14,
+      "totalQuestions": 15,
+      "percentage": 93,
+      "timeSeconds": 184,
+      "timeFormatted": "03:04",
+      "badge": "AI Champion 🏆",
+      "wrongAnswersCount": 1,
+      "school": "Kendriya Vidyalaya",
+      "rank": 1,
+      "isTopPerformer": true
+    },
+    {
+      "id": "sub_seed_3",
+      "type": "career_profile",
+      "studentId": "EXP-3190",
+      "studentName": "Arjun Verma",
+      "createdAt": "2026-10-30T15:40:58.593Z",
+      "school": "SSMIET Matric School",
+      "district": "Dindigul",
+      "classGrade": "12th",
+      "stream": "PCB",
+      "favSubjects": [
+        "Biology",
+        "Chemistry"
+      ],
+      "mathComfort": 3,
+      "codingComfort": 1,
+      "hobbies": [
+        "helping people",
+        "drawing/design"
+      ],
+      "careerPriorities": [
+        "helping society",
+        "job stability"
+      ],
+      "workStyle": "mix",
+      "environmentPref": "field and hands-on work",
+      "planAfter12th": "Engineering degree",
+      "tenYearGoal": "Develop smart biosensors to make cancer diagnosis affordable in rural clinics.",
+      "domainScores": {
+        "bio": 15,
+        "design": 8,
+        "data": 6,
+        "ai": 5,
+        "dev": 3
+      },
+      "topMatches": [
+        {
+          "id": "bio",
+          "title": "Biomedical & AI Health Systems",
+          "emoji": "🧬",
+          "score": 15,
+          "percentage": 91,
+          "why": "High passion for biology and helping society paired with modern clinical diagnostics.",
+          "whyResistant": "Direct patient clinical oversight, medical device validation, and surgical ethics cannot be automated by text models.",
+          "skills": "Bioinformatics, Medical Imaging, Signal Processing, Regulatory Compliance",
+          "firstSteps": [
+            "Study anatomy and physiology alongside basic Python data analysis.",
+            "Explore how wearable ECG and pulse oximeter sensors collect biometric data."
+          ],
+          "roadmapTab": "resistant"
+        }
+      ],
+      "profileAnalysis": {
+        "strengths": "Creative user empathy, visual communication, and human-centric design intuition.",
+        "skillsToBuild": "Start with Python basics (variables, loops, and simple scripts) on Replit.",
+        "backupPath": "Healthcare Informatics Specialist"
+      },
+      "consent": true
+    },
+    {
+      "id": "sub_seed_4",
+      "type": "knowledge_quiz",
+      "studentId": "EXP-3190",
+      "studentName": "Arjun Verma",
+      "createdAt": "2026-10-30T15:53:58.593Z",
+      "score": 13,
+      "totalQuestions": 15,
+      "percentage": 87,
+      "timeSeconds": 195,
+      "timeFormatted": "03:15",
+      "badge": "AI Explorer Pro 🌟",
+      "wrongAnswersCount": 2,
+      "school": "SSMIET Matric School",
+      "rank": 2,
+      "isTopPerformer": true
+    },
+    {
+      "id": "sub_seed_5",
+      "type": "knowledge_quiz",
+      "studentId": "EXP-5521",
+      "studentName": "Karthik Sundaram",
+      "createdAt": "2026-10-30T15:58:58.593Z",
+      "score": 12,
+      "totalQuestions": 15,
+      "percentage": 80,
+      "timeSeconds": 210,
+      "timeFormatted": "03:30",
+      "badge": "AI Explorer Pro 🌟",
+      "wrongAnswersCount": 3,
+      "school": "St. Joseph's HSS",
+      "rank": 3,
+      "isTopPerformer": true
+    }
+  ],
+  "createdAt": "2026-10-30T16:10:03.013Z",
+  "lastUpdated": "2026-10-30T16:10:03.014Z",
+  "stats": {
+    "totalStudents": 4,
+    "totalSubmissions": 5,
+    "careerCount": 2,
+    "quizCount": 3,
+    "avgQuizScore": 13,
+    "avgQuizPct": 87,
+    "topDomain": "Artificial Intelligence & ML Engineer",
+    "topDomainCount": 1,
+    "topPerformer": {
+      "studentId": "EXP-8472",
+      "studentName": "Priya Sharma",
+      "registeredAt": "2026-10-30T15:23:58.593Z",
+      "lastActive": "2026-10-30T15:48:58.593Z",
+      "school": "Kendriya Vidyalaya",
+      "district": "Dindigul",
+      "classGrade": "12th",
+      "stream": "PCM",
+      "status": "Completed All Phases",
+      "quizScore": 14,
+      "quizTotal": 15,
+      "quizPercentage": 93,
+      "timeSeconds": 184,
+      "badge": "AI Champion 🏆",
+      "promptScore": 5,
+      "totalScore": 19,
+      "rank": 1,
+      "isTopPerformer": true,
+      "careerTopMatch": "Artificial Intelligence & ML Engineer",
+      "careerTopMatchPct": 95
+    }
+  }
+}
